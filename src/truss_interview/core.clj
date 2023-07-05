@@ -1,9 +1,13 @@
 (ns truss-interview.core
   (:require [clojure.data.csv :as csv]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [clojure.string :as str]))
 
 (defn transform-zip [zip]
   (format "%05d" (Integer/parseInt zip)))
+
+(defn transform-full-name [name]
+  (str/upper-case name))
 
 (defn process-data-line [[timestamp
                           address
@@ -16,7 +20,7 @@
   [timestamp
    address
    (transform-zip zip)
-   full-name
+   (transform-full-name full-name)
    foo-duration
    bar-duration
    total-duration
