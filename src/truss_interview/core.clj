@@ -2,7 +2,18 @@
   (:require [clojure.data.csv :as csv]
             [clojure.java.io :as io]
             [clojure.string :as str])
-  (:import [java.time Duration]))
+  (:import [java.time Duration ZoneId ZonedDateTime]
+           [java.time.format DateTimeFormatter]))
+
+(defn parse-timestamp [timestamp]
+  (let [pacific-datetime-formatter (-> (DateTimeFormatter/ofPattern "M/d/yy h:mm:ss a")
+                                       (.withZone (ZoneId/of "US/Pacific")))]
+    (ZonedDateTime/parse timestamp pacific-datetime-formatter)))
+
+(defn transform-timestamp [zoned-timestamp]
+  (let [eastern-datetime-formatter (-> (DateTimeFormatter/ofPattern "M/d/yy h:mm:ss a")
+                                       (.withZone (ZoneId/of "US/Eastern")))]
+    (.format eastern-datetime-formatter zoned-timestamp)))
 
 (defn transform-zip [zip]
   (format "%05d" (Integer/parseInt zip)))
@@ -28,10 +39,11 @@
                           bar-duration
                           total-duration
                           notes :as data-line]]
-  (let [parsed-foo-duration (parse-duration foo-duration)
+  (let [parsed-timestamp (parse-timestamp timestamp)
+        parsed-foo-duration (parse-duration foo-duration)
         parsed-bar-duration (parse-duration bar-duration)
         computed-total-duration (.plus parsed-foo-duration parsed-bar-duration)]
-    [timestamp
+    [(transform-timestamp parsed-timestamp)
      address
      (transform-zip zip)
      (transform-full-name full-name)
